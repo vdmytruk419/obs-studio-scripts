@@ -35,51 +35,80 @@ if ($obsProcesses) {
     # Execute the command and capture its output
     # You don't necessarily need 'cmd.exe /c' here since you're providing the full path,
     # but it doesn't hurt and can sometimes help with argument parsing for complex commands.
-    $output = cmd.exe /c $checkStatusCommand # Using the call operator '&' is often cleaner for direct execution
+    $output = cmd.exe /c $checkStatusCommand
 
     # Check if the output contains the search string (case-insensitive)
     if ($output -like "*Recording: true*") {
         if ($output -like "*Paused: true*") {
             Write-Log "⚠️ OBS Recording Status: Active (recording but paused)."
-            Add-Type -AssemblyName PresentationFramework
-            [System.Windows.MessageBox]::Show(
-                "OBS Studio запущено, але запис призупинено! Відновіть запис.",
-                "OBS paused",
-                [System.Windows.MessageBoxButton]::OK,
-                [System.Windows.MessageBoxImage]::Warning,
-                [System.Windows.MessageBoxButton]::OK,
-                [System.Windows.MessageBoxOptions]::ServiceNotification
-            )
+            $flagFile = "$PSScriptRoot\obs-paused-message-shown.flag"
+            if (Test-Path $flagFile) {  
+                # Message already shown, do nothing
+            } else {
+                New-Item -Path $flagFile -ItemType File -Force | Out-Null
+                try {
+                    Add-Type -AssemblyName PresentationFramework
+                    [System.Windows.MessageBox]::Show(
+                        "OBS Studio запущено, але запис призупинено! Відновіть запис.",
+                        "OBS paused",
+                        [System.Windows.MessageBoxButton]::OK,
+                        [System.Windows.MessageBoxImage]::Warning,
+                        [System.Windows.MessageBoxButton]::OK,
+                        [System.Windows.MessageBoxOptions]::ServiceNotification
+                    )
+                } finally {
+                    Remove-Item $flagFile -ErrorAction SilentlyContinue
+                }
+            }
             # cmd.exe /c $resumeRecordingCommand
         } else {
             Write-Log "✅ OBS Recording Status: Active"
         }
     } else {
         Write-Log "❌ OBS Recording Status: Not Active or unexpected output."
-        Add-Type -AssemblyName PresentationFramework
-        [System.Windows.MessageBox]::Show(
-            "OBS Studio запущено, але не запис не включено! Включіть запис.",
-            "OBS Not Recording",
-            [System.Windows.MessageBoxButton]::OK,
-            [System.Windows.MessageBoxImage]::Error,
-            [System.Windows.MessageBoxButton]::OK,
-            [System.Windows.MessageBoxOptions]::ServiceNotification
-        )
+        $flagFile = "$PSScriptRoot\obs-not-recording-message-shown.flag"
+        if (Test-Path $flagFile) {
+            # Message already shown, do nothing
+        } else {
+            New-Item -Path $flagFile -ItemType File -Force | Out-Null
+            try {
+                Add-Type -AssemblyName PresentationFramework
+                [System.Windows.MessageBox]::Show(
+                    "OBS Studio запущено, але не запис не включено! Включіть запис.",
+                    "OBS Not Recording",
+                    [System.Windows.MessageBoxButton]::OK,
+                    [System.Windows.MessageBoxImage]::Error,
+                    [System.Windows.MessageBoxButton]::OK,
+                    [System.Windows.MessageBoxOptions]::ServiceNotification
+                )
+            } finally {
+                Remove-Item $flagFile -ErrorAction SilentlyContinue
+            }
+        }
         # cmd.exe /c $startRecordingCommand
     }
 } else {
     Write-Log "OBS Studio process '$obsProcessName' is NOT running."
-    Add-Type -AssemblyName PresentationFramework
     # Show a modal message box that blocks interaction with other windows until OK is clicked
-    Add-Type -AssemblyName PresentationFramework
-    $null = [System.Windows.MessageBox]::Show(
-        "OBS Studio не запущено! Запустіть OBS Studio та почніть запис.",
-        "OBS Not Running",
-        [System.Windows.MessageBoxButton]::OK,
-        [System.Windows.MessageBoxImage]::Error,
-        [System.Windows.MessageBoxButton]::OK,
-        [System.Windows.MessageBoxOptions]::ServiceNotification
-    )
+    $flagFile = "$PSScriptRoot\obs-not-running-message-shown.flag"
+    if (Test-Path $flagFile) {
+        # Message already shown, do nothing
+    } else {
+        New-Item -Path $flagFile -ItemType File -Force | Out-Null
+        try {
+            Add-Type -AssemblyName PresentationFramework
+            [System.Windows.MessageBox]::Show(
+                "OBS Studio не запущено! Запустіть OBS Studio та почніть запис.",
+                "OBS Not Running",
+                [System.Windows.MessageBoxButton]::OK,
+                [System.Windows.MessageBoxImage]::Error,
+                [System.Windows.MessageBoxButton]::OK,
+                [System.Windows.MessageBoxOptions]::ServiceNotification
+            ) | Out-Null
+        } finally {
+            Remove-Item $flagFile -ErrorAction SilentlyContinue
+        }
+    }
     # 3. If OBS is not running, start it
     # Start-Process -WorkingDirectory $obsDirectory -FilePath $obsExecutable -ArgumentList "--startrecording --minimize-to-tray"
     # Write-Log "Command issued: Start-Process -FilePath '$obsExecutable' -ArgumentList '--startrecording --minimize-to-tray'"
