@@ -3,11 +3,11 @@
 
 # --- Configuration ---
 $obsDirectory = "C:\Program Files\obs-studio\bin\64bit" # <--- IMPORTANT: Change this to your actual OBS installation path
-$obsExecutable = "obs64.exe" # Binnary name
+$obsExecutable = "obs64.exe" # <--- IMPORTANT: Verify this path
 $obsProcessName = "obs64" # Process name for 64-bit OBS
 
 # Path to log file for script actions
-$logFile = "log.txt" # <--- IMPORTANT: Change this to your desired log file
+$logFile = "$PSScriptRoot\log.txt" # <--- IMPORTANT: Change this to your desired log file
 
 # Function to log messages
 function Write-Log {
@@ -28,9 +28,9 @@ if ($obsProcesses) {
 
     # Define the command to run, specifying the current directory for obs-cmd.exe
     # The '.\' indicates that obs-cmd.exe is in the current directory.
-    $checkStatusCommand = ".\obs-cmd.exe recording status"
-    $startRecordingCommand = ".\obs-cmd.exe recording start"
-    $resumeRecordingCommand = ".\obs-cmd.exe recording resume"
+    $checkStatusCommand = "$PSScriptRoot\obs-cmd.exe recording status"
+    $startRecordingCommand = "$PSScriptRoot\obs-cmd.exe recording start"
+    $resumeRecordingCommand = "$PSScriptRoot\obs-cmd.exe recording resume"
 
     # Execute the command and capture its output
     # You don't necessarily need 'cmd.exe /c' here since you're providing the full path,
