@@ -7,12 +7,12 @@ $obsExecutable = "obs64.exe" # <--- IMPORTANT: Verify this path
 $obsProcessName = "obs64" # Process name for 64-bit OBS
 
 # Path to log file for script actions
-$logFile = "$PSScriptRoot\log.txt" # <--- IMPORTANT: Change this to your desired log file
+$logFile = "$PSScriptRoot\log-$(Get-Date -Format 'yyyy-MM-dd').txt" # Log file includes current date
 
 # Function to log messages
 function Write-Log {
     param([string]$Message)
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $timestamp = Get-Date -Format "HH:mm:ss"
     $logEntry = "$timestamp - $Message"
     Add-Content -Path $logFile -Value $logEntry
     Write-Host $logEntry # Also output to console for immediate feedback
