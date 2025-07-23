@@ -1,4 +1,4 @@
-# PowerShell script to start OBS Studio and begin recording,
+﻿# PowerShell script to start OBS Studio and begin recording,
 # but only if OBS is not already running and recording.
 
 # --- Configuration ---
@@ -41,19 +41,48 @@ if ($obsProcesses) {
     if ($output -like "*Recording: true*") {
         if ($output -like "*Paused: true*") {
             Write-Log "⚠️ OBS Recording Status: Active (recording but paused), resuming recording..."
-            cmd.exe /c $resumeRecordingCommand
+            Add-Type -AssemblyName PresentationFramework
+            [System.Windows.MessageBox]::Show(
+                "OBS Studio запущено, але запис призупинено! Відновіть запис.",
+                "OBS paused",
+                [System.Windows.MessageBoxButton]::OK,
+                [System.Windows.MessageBoxImage]::Warning,
+                [System.Windows.MessageBoxButton]::OK,
+                [System.Windows.MessageBoxOptions]::ServiceNotification
+            )
+            # cmd.exe /c $resumeRecordingCommand
         } else {
             Write-Log "✅ OBS Recording Status: Active"
         }
     } else {
         Write-Log "❌ OBS Recording Status: Not Active or unexpected output."
-        cmd.exe /c $startRecordingCommand
+        Add-Type -AssemblyName PresentationFramework
+        [System.Windows.MessageBox]::Show(
+            "OBS Studio запущено, але не запис не включено! Включіть запис.",
+            "OBS Not Recording",
+            [System.Windows.MessageBoxButton]::OK,
+            [System.Windows.MessageBoxImage]::Error,
+            [System.Windows.MessageBoxButton]::OK,
+            [System.Windows.MessageBoxOptions]::ServiceNotification
+        )
+        # cmd.exe /c $startRecordingCommand
     }
 } else {
     Write-Log "OBS Studio process '$obsProcessName' is NOT running. Starting OBS Studio with recording parameter..."
+    Add-Type -AssemblyName PresentationFramework
+    # Show a modal message box that blocks interaction with other windows until OK is clicked
+    Add-Type -AssemblyName PresentationFramework
+    $null = [System.Windows.MessageBox]::Show(
+        "OBS Studio не запущено! Запустіть OBS Studio та почніть запис.",
+        "OBS Not Running",
+        [System.Windows.MessageBoxButton]::OK,
+        [System.Windows.MessageBoxImage]::Error,
+        [System.Windows.MessageBoxButton]::OK,
+        [System.Windows.MessageBoxOptions]::ServiceNotification
+    )
     # 3. If OBS is not running, start it
-    Start-Process -WorkingDirectory $obsDirectory -FilePath $obsExecutable -ArgumentList "--startrecording --minimize-to-tray"
-    Write-Log "Command issued: Start-Process -FilePath '$obsExecutable' -ArgumentList '--startrecording --minimize-to-tray'"
+    # Start-Process -WorkingDirectory $obsDirectory -FilePath $obsExecutable -ArgumentList "--startrecording --minimize-to-tray"
+    # Write-Log "Command issued: Start-Process -FilePath '$obsExecutable' -ArgumentList '--startrecording --minimize-to-tray'"
 }
 
 Write-Log "Script finished."
