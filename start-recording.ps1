@@ -40,7 +40,7 @@ if ($obsProcesses) {
     # Check if the output contains the search string (case-insensitive)
     if ($output -like "*Recording: true*") {
         if ($output -like "*Paused: true*") {
-            Write-Log "⚠️ OBS Recording Status: Active (recording but paused), resuming recording..."
+            Write-Log "⚠️ OBS Recording Status: Active (recording but paused)."
             Add-Type -AssemblyName PresentationFramework
             [System.Windows.MessageBox]::Show(
                 "OBS Studio запущено, але запис призупинено! Відновіть запис.",
@@ -68,7 +68,7 @@ if ($obsProcesses) {
         # cmd.exe /c $startRecordingCommand
     }
 } else {
-    Write-Log "OBS Studio process '$obsProcessName' is NOT running. Starting OBS Studio with recording parameter..."
+    Write-Log "OBS Studio process '$obsProcessName' is NOT running."
     Add-Type -AssemblyName PresentationFramework
     # Show a modal message box that blocks interaction with other windows until OK is clicked
     Add-Type -AssemblyName PresentationFramework
